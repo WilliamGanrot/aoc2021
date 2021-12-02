@@ -29,4 +29,6 @@ pom.xml.asc
 .lsp/sqlite.*.db
 /doc/
 .lsp/.cache
-
+.calva/output-window
+.calva/
+/calva/
