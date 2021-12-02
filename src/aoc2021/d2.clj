@@ -13,29 +13,25 @@ forward 2"))
 (defn parse [input]
   (for [l input]
     (let [[opp value] (str/split l #" ")]
-      {(keyword opp) (Integer/parseInt value)})))
+      [(keyword opp) (Integer/parseInt value)])))
 
 ;; part 1
-(loop [input (parse input)
-       pos {:x 0 :y 0}]
-  (let [head (first input)
-        tail (rest input)]
-    (if (nil? head) pos
-     (case (apply key head)
-           :down (recur tail (update pos :y #(+ % (:down head))))
-           :up (recur tail (update pos :y #(- % (:up head))))
-           :forward (recur tail (update pos :x #(+ % (:forward head))))))))
+(reduce (fn [map [key val]]
+          (case key
+            :down (update map :y #(+ % val))
+            :up (update map :y #(- % val))
+            :forward (update map :x #(+ % val))))
+        {:x 0 :y 0}
+        (parse test-input))
 
 ;; part 2
-(loop [input (parse input)
-       pos {:x 0 :y 0 :aim 0}]
-  (let [head (first input)
-        tail (rest input)]
-    (if (nil? head) pos
-        (case (apply key head)
-          :down (recur tail (update pos :aim #(+ % (:down head))))
-          :up (recur tail (update pos :aim #(- % (:up head))))
-          :forward (recur tail 
-                    (as-> pos $
-                      (update $ :x #(+ % (:forward head)))
-                      (update $ :y #(+ % (* (:aim $) (:forward head))))))))))
+(reduce (fn [map [key val]]
+          (case key
+            :down (update map :aim #(+ % val))
+            :up (update map :aim #(- % val))
+            :forward (as-> map $
+                       (update $ :x #(+ % val))
+                       (update $ :y #(+ % (* (:aim $) val))))))
+        {:aim 0 :y 0 :x 0}
+        (parse test-input))
+
