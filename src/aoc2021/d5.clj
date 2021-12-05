@@ -20,12 +20,18 @@
 (defn horizontal? [instruction]
   (= (:ay instruction) (:by instruction)))
 
+(defn top-diagonal? [instruction]
+  (= 
+   (- (:ax instruction) (:bx instruction))
+   (- (:ay instruction) (:by instruction)) )
+  )
+
 (defn parse [input]
   (->> input
-       (map #(let [[_ ax ay bx by] (re-find #"(\d),(\d)\s+->\s+(\d),(\d)" %)]
-               {:ax (Long/parseLong ax) 
-                :ay (Long/parseLong ay) 
-                :bx (Long/parseLong bx) 
+       (map #(let [[_ ax ay bx by] (re-find #"(\d+),(\d+)\s+->\s+(\d+),(\d+)" %)]
+               {:ax (Long/parseLong ax)
+                :ay (Long/parseLong ay)
+                :bx (Long/parseLong bx)
                 :by (Long/parseLong by)}))))
 
 (defn horizontal-path [instruction]
@@ -42,35 +48,53 @@
     (->> yrange
          (map (fn [y] [x y])))))
 
+(defn bottom-diagonal-path [instruction]
+  (let [[x1 x2] (sort [(:ax instruction) (:bx instruction)])
+        [y1 y2] (sort [(:ay instruction) (:by instruction)])
+        path (map (fn [a b] [a b]) (range x1 (inc x2)) (reverse (range y1 (inc y2))))]
+    path))
+
+(defn top-diagonal-path [instruction]
+  (let [[x1 x2] (sort [(:ax instruction) (:bx instruction)])
+        [y1 y2] (sort [(:ay instruction) (:by instruction)])
+        path (map (fn [a b] [a b]) (range x1 (inc x2)) (range y1 (inc y2)))]
+    path))
+
 (defn path [instruction]
+  (println instruction)
   (case (:dir instruction)
     :horizontal (horizontal-path instruction)
-    :vertical (vertical-path instruction)))
+    :vertical (vertical-path instruction)
+    :bottom-diagonal (bottom-diagonal-path instruction)
+    :top-diagonal (top-diagonal-path instruction)))
 
 (defn instruction-info [input]
   (->> input
        parse
        (map #(cond
                (horizontal? %) (assoc % :dir :horizontal)
-               (vertical? %) (assoc % :dir :vertical)
-               :else (assoc % :dir :diagonal)))
-       (filter #(not= :diagonal (:dir %)))
-       (map #(assoc % :path (path %)))
-       ))
+               (vertical? %) (assoc % :dir :vertical) 
+               (top-diagonal? %) (assoc % :dir :top-diagonal)
+               :else (assoc % :dir :bottom-diagonal)))
+       (map #(assoc % :path (path %)))))
 
+;; part 1
 (->> test-input
      instruction-info
-     ;;
+     (filter #(or (= :horizontal (:dir %)) (= :vertical (:dir %))))
      (map #(:path %))
-     ;;
-     ;;
      (filter not-empty)
-     
-     ;;
      (mapcat identity)
-     ;;count
      frequencies
      (filter (fn [[_ freq]] (> freq 1)))
-     count
-     )
+     count)
 
+
+;; part 2
+(->> input
+     instruction-info
+     (map #(:path %))
+     (mapcat identity)
+     frequencies
+     (filter (fn [[_ freq]] (> freq 1)))
+     count)
