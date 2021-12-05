@@ -33,7 +33,7 @@
   (->> (first input)
      count
      range
-     (map #(freq-digits-at-index test-input %))))
+     (map #(freq-digits-at-index input %))))
 
 (defn gamma-binary [input]
   (reduce (fn [acc [zero one]]
@@ -58,12 +58,12 @@
                       (pred ones zeros) 1
                       :else 0)
             filterd-candidats (->> candidates
-                                   (filter (fn [v] (= (str (nth v index)) (str req-num)))))]
+                                   (filter #(= (Character/digit (nth % index) 10) req-num)))]
         (recur filterd-candidats (inc index))))))
 
 ;; p1
-(let [i (freq-digits-at-indexes test-input)]
-  (->> [(epsilon-binary   i) (gamma-binary i)]
+(let [i (freq-digits-at-indexes input)]
+  (->> [(epsilon-binary i) (gamma-binary i)]
        (map #(binary->base10 %))
        (reduce * 1)))
 
