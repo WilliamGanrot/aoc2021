@@ -71,3 +71,6 @@
 (->> [(rate input > 1) (rate input < 0)]
      (map #(binary->base10 %))
      (reduce * 1))
+
+(range 3
+       )
