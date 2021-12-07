@@ -14,9 +14,7 @@
 (defn total-distances-to [pos crabs step-inc]
   (->> crabs
        (map #(math/abs (- pos %)))
-       (map #(+ % (->> (range %)
-                       (map (fn [v] (* v step-inc)))
-                       (reduce +))))
+       (map #(+ % (* (/ (- (* % %) %) 2) step-inc)))
        (reduce +)))
 
 (defn solve [input step-inc]
@@ -27,4 +25,5 @@
                 min)))
           ##Inf (range (reduce min input) (inc (reduce max input)))))
 
-(solve test-input 1)
+
+(solve input 1)
