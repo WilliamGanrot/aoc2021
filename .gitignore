@@ -33,3 +33,4 @@ pom.xml.asc
 .calva/
 /calva/
 calva/
+.ionide/
