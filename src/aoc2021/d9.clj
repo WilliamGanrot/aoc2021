@@ -15,7 +15,6 @@
               (->> row
                    (map (fn [cell] (Character/digit cell 10))))))))
 
-
 (defn get-cord [x y map]
   (let [row (nth map y nil)
         cell (nth row x nil)]
@@ -27,7 +26,6 @@
                       (->> row
                            (map-indexed (fn [x cell] [cell [x y]])))))))
 
-
 (defn cells-with-adjecents [height-map]
   (->> (index-map height-map)
        (mapcat identity)
@@ -38,47 +36,26 @@
                                    :left (get-cord (dec x) y height-map)
                                    :right (get-cord (inc x) y height-map)}}))))
 
-(defn all-is-less-than [v list]
-  (->> list
-       (filter #(<= % v))
-       (empty?)))
-
-
 (defn lowpoints [input]
   (->> (cells-with-adjecents input)
        (filter (fn [map]
                  (->> (vals (:adj map))
                       (remove nil?)
-                      (all-is-less-than (:cell map)))))))
+                      (every? #(< (:cell map) %)))))))
 
 ;; part 1
 (->> (lowpoints input)
      (map #(inc (:cell %)))
      (reduce +))
 
-
-(defn point-in-point-map [point-map point]
-  (->> point-map
-       (filter #(= (:index %) (:index point)))
-       first
-       nil?
-       not))
-
-(defn remove-point-from-point-map [point-map point]
-  (->> point-map
-       (filter #(not= (:index %) (:index point)))))
-
-(defn remove-range-from-point-map [point-map points]
-  (reduce (fn [acc traversed-point]
-            (remove-point-from-point-map acc traversed-point))
-          point-map points))
+(defn remove-range-from-point-map [list range-to-remove]
+  (reduce (fn [acc to-remove] (remove #{to-remove} acc)) list range-to-remove))
 
 ;; part 2
 (defn traverse [point point-map]
-  (let [center (:cell point)
-        [x y] (:index point)
+  (let [[x y] (:index point)
         greater-adjs (->> (seq (:adj point))
-                          (filter (fn [[_ v]] (and (not= nil v) (>= v center))))
+                          (filter (fn [[_ v]] (and (not= nil v) (>= v (:cell point)))))
                           (map (fn [[k _]] (case k
                                              :top [x (dec y)]
                                              :bottom [x (inc y)]
@@ -87,13 +64,13 @@
                           (map (fn [xy] (->> point-map
                                              (filter #(= xy (:index %)))
                                              first)))
-                          (filter #(point-in-point-map point-map %))
+                          (filter #(not= nil (some #{%} point-map)))
                           (filter #(not= 9 (:cell %))))]
     
     (cond
       (empty? greater-adjs) point
       :else (flatten [point (->> greater-adjs
-                                 (map #(traverse % (remove-point-from-point-map point-map %))))]))))
+                                 (map #(traverse % (remove #{%} point-map))))]))))
 
 (defn traverse-points [point-map points]
   (->> points
@@ -101,7 +78,7 @@
                  (let [traversed (->> (traverse point point-map) distinct)
                        updated-point-map (remove-range-from-point-map point-map traversed)]
                    [(conj acc (count traversed))
-                    (remove-point-from-point-map updated-point-map point)]))
+                    (remove #{point} updated-point-map)]))
                [[] point-map])
        first))
 
