@@ -95,13 +95,20 @@
       :else (flatten [point (->> greater-adjs
                                  (map #(traverse % (remove-point-from-point-map point-map %))))]))))
 
-(->> (lowpoints test-input)
-     (reduce (fn [[acc point-map] point]
-               (let [traversed (->> (traverse point point-map) distinct)
-                     updated-point-map (remove-range-from-point-map point-map traversed)]
-                 [(conj acc (count traversed)) (remove-point-from-point-map updated-point-map point)])) [[] (cells-with-adjecents test-input)])
-     first
-     sort
-     reverse
-     (take 3)
-     (reduce *))
+(defn traverse-points [point-map points]
+  (->> points
+       (reduce (fn [[acc point-map] point]
+                 (let [traversed (->> (traverse point point-map) distinct)
+                       updated-point-map (remove-range-from-point-map point-map traversed)]
+                   [(conj acc (count traversed))
+                    (remove-point-from-point-map updated-point-map point)]))
+               [[] point-map])
+       first))
+
+(let [point-map (cells-with-adjecents test-input)]
+  (->> (lowpoints test-input)
+       (traverse-points point-map)
+       sort
+       reverse
+       (take 3)
+       (reduce *)))
