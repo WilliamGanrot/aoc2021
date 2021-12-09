@@ -117,7 +117,7 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
                           "" segments)))
 
 ;; part2 
-(->> test-input
+(->> input
      (map #(assoc % :pattern (find-pattern (:input %))))
      (map #(match-pattern (:pattern %) (:output %)))
      (reduce +))
