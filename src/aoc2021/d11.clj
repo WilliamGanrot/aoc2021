@@ -93,12 +93,9 @@
           (map #(dissoc % :flashed)))]))
 
 
-(map #(:charge %) (reduce (fn [[squids count] _]
-                            (let [[s c] (step squids)]
-                              (println c)
-                              [s (+ c count)])) [(parse input) 0] (range 100)))
+(->> (range 100)
+     (reduce (fn [[count squids] _]
+               (let [[c s] (step squids)]
+                 [(+ c count) s])) [0 (parse input)])
+     first)
 
-(+ 1 1)
-
-
-(reduce + [0 48 44 8 1 4 20 40 32 6 8 19 12 26 18 25 17 15 5 29 14 23 28 3 13 26 15 7 42 6 6 33 11 12 21 16 16 25 21 25 2 20 10 24 15 34 5 17 15 13 17 33 17 0 21 12 21 40 0 7 6 33 21 30 3 0 13 36 19 28 1 3 7 29 32 28 0 6 9 18 25 43 4 1 10 17 18 55 0 0 4 23 20 32 23 0 2 18 26 33])
